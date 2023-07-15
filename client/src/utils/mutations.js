@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+const { gql } = require('@apollo/client');
 
 export const LOGIN_USER = gql`
   mutation login($email: String!, $password: String!) {
@@ -8,7 +8,6 @@ export const LOGIN_USER = gql`
         _id
         username
         email
-        password
       }
     }
   }
@@ -17,65 +16,49 @@ export const LOGIN_USER = gql`
 export const ADD_USER = gql`
   mutation addUser($username: String!, $email: String!, $password: String!) {
     addUser(username: $username, email: $email, password: $password) {
-        token
-        user {
-          _id
-          username
-          email
-          password
-        }
+      token
+      user {
+        _id
+        username
+        email
       }
+    }
   }
 `;
 
 export const SAVE_BOOK = gql`
-    input BookInput {
-        bookId: String!
-        authors: [String]
-        description: String!
-        title: String!
-        image: String
-        link: String
-    }
-
-  mutation saveBook($book: BookInput) {
-    saveBook(book: $book) {
-        user {
-          _id
-          username
-          email
-          password
-          bookCount
-          savedBooks {
-            bookId
-            authors
-            description
-            title
-            image
-            link
-          }
-        }
+  mutation saveBook($input: BookInput!) {
+    saveBook(input: $input) {
+      _id
+      username
+      email
+      bookCount
+      savedBooks {
+        bookId
+        authors
+        description
+        title
+        image
+        link
+      }
     }
   }
 `;
 
 export const REMOVE_BOOK = gql`
-  mutation removeBook($bookId: String!) {
+  mutation removeBook($bookId: ID!) {
     removeBook(bookId: $bookId) {
-      user {
-        _id
-        username
-        email
-        password
-        bookCount
-        savedBooks {
-          bookId
-          authors
-          description
-          title
-          image
-          link
-        }
+      _id
+      username
+      email
+      bookCount
+      savedBooks {
+        bookId
+        authors
+        description
+        title
+        image
+        link
       }
     }
   }

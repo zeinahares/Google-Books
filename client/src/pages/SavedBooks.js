@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap';
 
-import { useQuery, useMutation } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { GET_ME } from '../utils/queries';
 import { REMOVE_BOOK } from '../utils/mutations';
 
@@ -9,19 +9,16 @@ import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
 
 const SavedBooks = () => {
-  const [userData, setUserData] = useState({});
 
-  // use this to determine if `useEffect()` hook needs to run again
-  const userDataLength = Object.keys(userData).length;
+  const { loading, data } = useQuery(GET_ME);
+  console.log(data)
+  const userData = data?.me || {};
+  
 
-  const { data } = useQuery(GET_ME);
+  const [deleteBook] = useMutation(REMOVE_BOOK);
 
-  setUserData(data.user);
-
-  const [removeBook] = useMutation(REMOVE_BOOK);
-
-  // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
+ 
     const token = Auth.loggedIn() ? Auth.getToken() : null;
 
     if (!token) {
@@ -29,30 +26,23 @@ const SavedBooks = () => {
     }
 
     try {
-      const response = await removeBook({
-        variables: {
-          bookId,
-          token
-        }
+     await deleteBook({
+        variables: { bookId: bookId },
       });
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const updatedUser = await response.json();
-      setUserData(updatedUser);
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
     } catch (err) {
       console.error(err);
     }
   };
+  console.log(userData);
+
 
   // if data isn't here yet, say so
-  if (!userDataLength) {
-    return <h2>LOADING...</h2>;
-  }
+    if (loading) {
+      return <h2>LOADING...</h2>;
+    } 
 
   return (
     <>
@@ -76,6 +66,8 @@ const SavedBooks = () => {
                   <Card.Title>{book.title}</Card.Title>
                   <p className='small'>Authors: {book.authors}</p>
                   <Card.Text>{book.description}</Card.Text>
+                  <Card.Text>Link to Googlebooks site: <a href={book.link} rel="noopener noreferrer"
+                target="_blank" className="small"> @googlebooks</a></Card.Text>
                   <Button className='btn-block btn-danger' onClick={() => handleDeleteBook(book.bookId)}>
                     Delete this Book!
                   </Button>
